@@ -67,10 +67,24 @@ model RepairTicket {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  shop          Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer      Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  statusHistory RepairStatusHistory[]
 
   @@unique([shopId, ticketNumber])
   @@index([shopId, status])
   @@index([customerId])
+}
+
+model RepairStatusHistory {
+  id             String       @id @default(uuid())
+  repairTicketId String
+  oldStatus      RepairStatus?
+  newStatus      RepairStatus
+  note           String?
+  changedAt      DateTime     @default(now())
+
+  repairTicket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+
+  @@index([repairTicketId, changedAt])
 }

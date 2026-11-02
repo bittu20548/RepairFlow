@@ -7,6 +7,7 @@ import {
   getRepairTicketById,
   updateRepairTicket,
   deleteRepairTicket,
+  getRepairStatusHistory,
 } from "../services/repairTicket.service";
 
 // CREATE REPAIR TICKET
@@ -145,7 +146,7 @@ export const update = async (req: Request, res: Response) => {
 
     const result = await updateRepairTicket(id, shopId, req.body);
 
-    if (result.count === 0) {
+    if (!result) {
       return res.status(404).json({
         success: false,
         message: "Repair ticket not found",
@@ -155,6 +156,7 @@ export const update = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       message: "Repair ticket updated successfully",
+      data: result,
     });
   } catch (error) {
     console.error("Update repair ticket error:", error);
@@ -198,6 +200,48 @@ export const remove = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: "Failed to delete repair ticket",
+    });
+  }
+};
+
+// GET REPAIR TICKET STATUS HISTORY
+export const getStatusHistory = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const repairTicketId = String(req.params.id);
+    const shopId = req.query.shopId as string;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        message: "Shop ID is required",
+      });
+    }
+
+    // Verify that the ticket belongs to this shop
+    const ticket = await getRepairTicketById(repairTicketId, shopId);
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: "Repair ticket not found",
+      });
+    }
+
+    const history = await getRepairStatusHistory(repairTicketId);
+
+    return res.status(200).json({
+      success: true,
+      data: history,
+    });
+  } catch (error) {
+    console.error("Get repair status history error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch repair status history",
     });
   }
 };
