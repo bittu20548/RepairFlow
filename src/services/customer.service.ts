@@ -1,54 +1,48 @@
-import { randomUUID } from "crypto";
-import type {
-  Customer,
-  CreateCustomerInput,
-} from "../types/customer.types";
+import { prisma } from "../lib/prisma";
 
-let customers: Customer[] = [];
-
-export const createCustomer = (data: CreateCustomerInput): Customer => {
-  const customer: Customer = {
-    id: randomUUID(),
-    name: data.name,
-    phone: data.phone,
-    email: data.email,
-    address: data.address,
-    createdAt: new Date(),
-  };
-
-  customers.push(customer);
-  return customer;
+export const createCustomer = (data: {
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  shopId: string;
+}) => {
+  return prisma.customer.create({
+    data,
+  });
 };
 
-export const getAllCustomers = (): Customer[] => {
-  return customers;
+export const getAllCustomers = (shopId: string) => {
+  return prisma.customer.findMany({
+    where: { shopId },
+    orderBy: { createdAt: "desc" },
+  });
 };
 
-export const getCustomerById = (id: string): Customer | undefined => {
-  return customers.find((customer) => customer.id === id);
+export const getCustomerById = (id: string, shopId: string) => {
+  return prisma.customer.findFirst({
+    where: { id, shopId },
+  });
 };
 
 export const updateCustomer = (
   id: string,
-  data: Partial<CreateCustomerInput>
-): Customer | null => {
-  const customer = customers.find((customer) => customer.id === id);
-
-  if (!customer) return null;
-
-  if (data.name !== undefined) customer.name = data.name;
-  if (data.phone !== undefined) customer.phone = data.phone;
-  if (data.email !== undefined) customer.email = data.email;
-  if (data.address !== undefined) customer.address = data.address;
-
-  return customer;
+  shopId: string,
+  data: {
+    name?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+  }
+) => {
+  return prisma.customer.updateMany({
+    where: { id, shopId },
+    data,
+  });
 };
 
-export const deleteCustomer = (id: string): boolean => {
-  const exists = customers.some((customer) => customer.id === id);
-
-  if (!exists) return false;
-
-  customers = customers.filter((customer) => customer.id !== id);
-  return true;
+export const deleteCustomer = (id: string, shopId: string) => {
+  return prisma.customer.deleteMany({
+    where: { id, shopId },
+  });
 };
