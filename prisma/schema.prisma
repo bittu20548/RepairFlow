@@ -21,6 +21,19 @@ enum RepairStatus {
   CANCELLED
 }
 
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
 model Shop {
   id        String   @id @default(uuid())
   name      String
@@ -31,6 +44,7 @@ model Shop {
 
   customers     Customer[]
   repairTickets RepairTicket[]
+  payments      Payment[]
 }
 
 model Customer {
@@ -70,6 +84,7 @@ model RepairTicket {
   shop          Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
   customer      Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
   statusHistory RepairStatusHistory[]
+  payments      Payment[]
 
   @@unique([shopId, ticketNumber])
   @@index([shopId, status])
@@ -87,4 +102,26 @@ model RepairStatusHistory {
   repairTicket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
 
   @@index([repairTicketId, changedAt])
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  amount        Float
+  method        PaymentMethod
+  status        PaymentStatus @default(SUCCESS)
+  transactionId String?
+  note          String?
+  paidAt        DateTime      @default(now())
+
+  shopId         String
+  repairTicketId String
+
+  shop         Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  repairTicket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId, paidAt])
+  @@index([repairTicketId])
 }

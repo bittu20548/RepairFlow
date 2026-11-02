@@ -5,11 +5,13 @@ import healthRoutes from "./routes/health.routes";
 import customerRoutes from "./routes/customer.routes";
 import shopRoutes from "./routes/shop.routes";
 import repairTicketRoutes from "./routes/repairTicket.routes";
+import paymentRoutes from "./routes/payment.routes";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/payments", paymentRoutes);
 app.use("/api/repair-tickets", repairTicketRoutes);
 app.get("/", (_req, res) => {
   return res.json({
