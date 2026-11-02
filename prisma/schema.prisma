@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -5,6 +6,19 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum RepairStatus {
+  RECEIVED
+  DIAGNOSING
+  WAITING_FOR_APPROVAL
+  APPROVED
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  READY_FOR_PICKUP
+  DELIVERED
+  CANCELLED
 }
 
 model Shop {
@@ -15,7 +29,8 @@ model Shop {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  customers Customer[]
+  customers     Customer[]
+  repairTickets RepairTicket[]
 }
 
 model Customer {
@@ -28,7 +43,34 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop          Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  repairTickets RepairTicket[]
 
   @@unique([shopId, phone])
+}
+
+model RepairTicket {
+  id            String       @id @default(uuid())
+  ticketNumber  String
+  deviceType    String
+  brand         String
+  model         String
+  imei          String?
+  problem       String
+  status        RepairStatus @default(RECEIVED)
+  estimatedCost Float?
+  finalCost     Float?
+
+  shopId     String
+  customerId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@unique([shopId, ticketNumber])
+  @@index([shopId, status])
+  @@index([customerId])
 }
