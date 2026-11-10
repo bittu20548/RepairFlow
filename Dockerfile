@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --no-audit --no-fund --fetch-retries=5 --fetch-timeout=120000
+RUN npm ci --no-audit --no-fund --maxsockets=1 --fetch-retries=5 --fetch-timeout=180000
 
 COPY . .
 
