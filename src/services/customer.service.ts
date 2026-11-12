@@ -1,33 +1,42 @@
+
 import { prisma } from "../lib/prisma";
 
+// Create a customer
 export const createCustomer = (data: {
   name: string;
   phone: string;
   email?: string;
   address?: string;
-  shopId: string;
 }) => {
   return prisma.customer.create({
-    data,
+    data: {
+      name: data.name,
+      phone: data.phone,
+      email: data.email || null,
+      address: data.address,
+    },
   });
 };
 
-export const getAllCustomers = (shopId: string) => {
+// Get all customers
+export const getAllCustomers = () => {
   return prisma.customer.findMany({
-    where: { shopId },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 };
 
-export const getCustomerById = (id: string, shopId: string) => {
-  return prisma.customer.findFirst({
-    where: { id, shopId },
+// Get customer by ID
+export const getCustomerById = (id: string) => {
+  return prisma.customer.findUnique({
+    where: { id },
   });
 };
 
+// Update customer
 export const updateCustomer = (
   id: string,
-  shopId: string,
   data: {
     name?: string;
     phone?: string;
@@ -35,14 +44,18 @@ export const updateCustomer = (
     address?: string;
   }
 ) => {
-  return prisma.customer.updateMany({
-    where: { id, shopId },
-    data,
+  return prisma.customer.update({
+    where: { id },
+    data: {
+      ...data,
+      email: data.email === "" ? null : data.email,
+    },
   });
 };
 
-export const deleteCustomer = (id: string, shopId: string) => {
-  return prisma.customer.deleteMany({
-    where: { id, shopId },
+// Delete customer
+export const deleteCustomer = (id: string) => {
+  return prisma.customer.delete({
+    where: { id },
   });
 };
