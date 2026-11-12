@@ -8,6 +8,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// ==================== ENUMS ====================
+
 enum RepairStatus {
   RECEIVED
   DIAGNOSING
@@ -34,6 +36,8 @@ enum PaymentStatus {
   REFUNDED
 }
 
+// ==================== SHOP ====================
+
 model Shop {
   id        String   @id @default(uuid())
   name      String
@@ -42,35 +46,37 @@ model Shop {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  customers     Customer[]
   repairTickets RepairTicket[]
   payments      Payment[]
 }
 
+// ==================== CUSTOMER ====================
+
 model Customer {
-  id        String   @id @default(uuid())
-  name      String
-  phone     String
-  email     String?
-  address   String?
-  shopId    String
+  id           String   @id @default(uuid())
+  name         String
+  phone        String   @unique
+  email        String?  @unique
+  passwordHash String?
+  address      String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shop          Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
   repairTickets RepairTicket[]
-
-  @@unique([shopId, phone])
 }
 
+// ==================== REPAIR TICKET ====================
+
 model RepairTicket {
-  id            String       @id @default(uuid())
-  ticketNumber  String
-  deviceType    String
-  brand         String
-  model         String
-  imei          String?
-  problem       String
+  id           String       @id @default(uuid())
+  ticketNumber String
+  deviceType   String
+  brand        String
+  model        String
+  imei         String?
+  problem      String
+
   status        RepairStatus @default(RECEIVED)
   estimatedCost Float?
   finalCost     Float?
@@ -81,8 +87,9 @@ model RepairTicket {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  shop          Shop                 @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  customer      Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Restrict)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
   statusHistory RepairStatusHistory[]
   payments      Payment[]
 
@@ -90,6 +97,8 @@ model RepairTicket {
   @@index([shopId, status])
   @@index([customerId])
 }
+
+// ==================== REPAIR STATUS HISTORY ====================
 
 model RepairStatusHistory {
   id             String       @id @default(uuid())
@@ -104,6 +113,8 @@ model RepairStatusHistory {
   @@index([repairTicketId, changedAt])
 }
 
+// ==================== PAYMENT ====================
+
 model Payment {
   id            String        @id @default(uuid())
   amount        Float
@@ -116,8 +127,8 @@ model Payment {
   shopId         String
   repairTicketId String
 
-  shop         Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  repairTicket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Cascade)
+  shop         Shop         @relation(fields: [shopId], references: [id], onDelete: Restrict)
+  repairTicket RepairTicket @relation(fields: [repairTicketId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
