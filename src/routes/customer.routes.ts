@@ -1,4 +1,8 @@
+
 import { Router } from "express";
+
+import { validate } from "../middleware/validate.middleware";
+import { createCustomerSchema } from "../schemas/customer.schema";
 
 import {
   create,
@@ -10,10 +14,23 @@ import {
 
 const router = Router();
 
-router.post("/", create);
+// Create customer with validation
+router.post(
+  "/",
+  validate(createCustomerSchema),
+  create
+);
+
+// Get all customers
 router.get("/", getAll);
+
+// Get customer by ID
 router.get("/:id", getOne);
+
+// Update customer
 router.patch("/:id", update);
+
+// Delete customer
 router.delete("/:id", remove);
 
 export default router;
