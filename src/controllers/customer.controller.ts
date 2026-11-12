@@ -1,3 +1,4 @@
+
 import type { Request, Response } from "express";
 
 import {
@@ -8,14 +9,15 @@ import {
   deleteCustomer,
 } from "../services/customer.service";
 
+// CREATE CUSTOMER
 export const create = async (req: Request, res: Response) => {
   try {
-    const { name, phone, email, address, shopId } = req.body;
+    const { name, phone, email, address } = req.body;
 
-    if (!name || !phone || !shopId) {
+    if (!name || !phone) {
       return res.status(400).json({
         success: false,
-        message: "Name, phone and shopId are required",
+        message: "Name and phone are required",
       });
     }
 
@@ -24,7 +26,6 @@ export const create = async (req: Request, res: Response) => {
       phone,
       email,
       address,
-      shopId,
     });
 
     return res.status(201).json({
@@ -33,7 +34,7 @@ export const create = async (req: Request, res: Response) => {
       data: customer,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Create customer error:", error);
 
     return res.status(500).json({
       success: false,
@@ -42,25 +43,17 @@ export const create = async (req: Request, res: Response) => {
   }
 };
 
-export const getAll = async (req: Request, res: Response) => {
+// GET ALL CUSTOMERS
+export const getAll = async (_req: Request, res: Response) => {
   try {
-    const shopId = req.query.shopId as string;
-
-    if (!shopId) {
-      return res.status(400).json({
-        success: false,
-        message: "shopId is required",
-      });
-    }
-
-    const customers = await getAllCustomers(shopId);
+    const customers = await getAllCustomers();
 
     return res.status(200).json({
       success: true,
       data: customers,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get customers error:", error);
 
     return res.status(500).json({
       success: false,
@@ -69,19 +62,12 @@ export const getAll = async (req: Request, res: Response) => {
   }
 };
 
+// GET CUSTOMER BY ID
 export const getOne = async (req: Request, res: Response) => {
   try {
-    const shopId = req.query.shopId as string;
     const id = req.params.id as string;
 
-    if (!shopId) {
-      return res.status(400).json({
-        success: false,
-        message: "shopId is required",
-      });
-    }
-
-    const customer = await getCustomerById(id, shopId);
+    const customer = await getCustomerById(id);
 
     if (!customer) {
       return res.status(404).json({
@@ -95,7 +81,7 @@ export const getOne = async (req: Request, res: Response) => {
       data: customer,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get customer error:", error);
 
     return res.status(500).json({
       success: false,
@@ -104,28 +90,12 @@ export const getOne = async (req: Request, res: Response) => {
   }
 };
 
+// UPDATE CUSTOMER
 export const update = async (req: Request, res: Response) => {
   try {
-    const shopId = req.query.shopId as string;
     const id = req.params.id as string;
 
-    if (!shopId) {
-      return res.status(400).json({
-        success: false,
-        message: "shopId is required",
-      });
-    }
-
-    const result = await updateCustomer(id, shopId, req.body);
-
-    if (result.count === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Customer not found",
-      });
-    }
-
-    const updatedCustomer = await getCustomerById(id, shopId);
+    const updatedCustomer = await updateCustomer(id, req.body);
 
     return res.status(200).json({
       success: true,
@@ -133,7 +103,7 @@ export const update = async (req: Request, res: Response) => {
       data: updatedCustomer,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Update customer error:", error);
 
     return res.status(500).json({
       success: false,
@@ -142,33 +112,19 @@ export const update = async (req: Request, res: Response) => {
   }
 };
 
+// DELETE CUSTOMER
 export const remove = async (req: Request, res: Response) => {
   try {
-    const shopId = req.query.shopId as string;
     const id = req.params.id as string;
 
-    if (!shopId) {
-      return res.status(400).json({
-        success: false,
-        message: "shopId is required",
-      });
-    }
-
-    const result = await deleteCustomer(id, shopId);
-
-    if (result.count === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Customer not found",
-      });
-    }
+    await deleteCustomer(id);
 
     return res.status(200).json({
       success: true,
       message: "Customer deleted successfully",
     });
   } catch (error) {
-    console.error(error);
+    console.error("Delete customer error:", error);
 
     return res.status(500).json({
       success: false,
